@@ -1,0 +1,109 @@
+最近看到了好几个Flash网站，head代码里都加载了一个swfobject.js，这个JS究 竟有什么作用呢？眼下正在做一个Web页面，说不定刚好可以派上用场。于是，好奇的搜索了一下。原来这是老外开发的，用于在HTML中方面插入Adobe Flash媒体资源（*.swf文件）的独立、敏捷的JavaScript模块，该模块中的JavaScript脚本能够自动检测PC、Mac机器上各种 主流浏览器对Flash插件的支持情况。目前最新的版本是2.2，这里可以下载最新版的SWFObject:
+http://code.google.com/p/swfobject/
+
+用这个js的好处：
+
+1.IE中没有讨厌的虚框问题了。
+2.提供了完善的版本检测功能，如果版本不够则显示其他东西，比如图片或文字。
+3.易于使用，只要在页面头加载一个 .js 文件，然后 HTML 写一个容器，里面放普通的文本或图片（用于无法显示 Flash 时显示），最后用脚本来替换这个元素里面的内容为 Flash。
+4.使得插入Flash媒体资源尽量简捷、安全。而且它是非常符合搜索引擎优化的原则的。
+5.能够避免HTML、XHTML中出现object、embed等非标准标签，从而符合更加标准。
+
+只需要包含 swfobject.js这个js文件，然后在DOM中插入一些简单的JS代码，就能嵌入Flash媒体资源了。下面是一个最简单的范例：
+<script type="text/javascript" src="swfobject.js"></script>
+<script type="text/javascript">
+   var so = new SWFObject("movie.swf", "mymovie", "400", "100%", "8", "#336699");
+   so.addParam("quality", "low");
+   so.addParam("wmode", "transparent");
+   so.addParam("salign", "t");
+   so.addVariable("variable1", "value1");
+   so.addVariable("variable2", "value2");
+   so.addVariable("variable3", "value3");
+   so.addVariable("variable1", getQueryParamValue("variable1"));
+   so.addVariable("variable2", getQueryParamValue("variable2"));
+   so.write("flashcontent");
+</script>
+　　
+
+<div id="flashcontent">[...]</div>首先，我们要为SWF资源预留一个HTML结点。这个HTML结点内的所有内容都会在客户端被Flash资源替换，当客户端没有安装Flash播放器的时候，这些内容会显示出来。这一特色在SEO以及对用户体验方面非常有必 要。
+
+var so = new SWFObject(swf, id, width, height, version, background-color [, quality, xiRedirectUrl, redirectUrl, detectKey]);创建一个新的SWFObject实例，并且传入一下参数:
+
+swf - SWF文件路径 
+id - 您为这个SWF文件分配的id值，它将用于给embed与object标签设定name属性，以便于可以支持swliveconnect的功能，如动态传 入变量 
+width - 宽度 
+height - 高度 
+version - FlashPlayer需要的版本号，它可以详细到 '主版本号.小版本号.细节'，例如："6.0.65"。一般地，我们只需传入主版本即可，例如："6"。 
+background-color - Flash资源的背景色，16进制格式 
+此外，还有如下可选参数:
+
+quality - 画面质量，默认为"high"。 
+xiRedirectUrl - 详见ExpressInstall相关 
+redirectUrl - 没有安装相应版本的播放器后自动跳转的目标地址 
+detectKey - 这是当忽略检测时，SWFObject将去url地址中查找的变量，默认值为“detectflash”，后续有详细介绍 
+so.write("flashcontent");将Flash资源应用到DOM里，在浏览器显示出来。
+
+解释一下这些参数的作用：
+
+   var so = new SWFObject(swf, id, width, height, version, background-color [, quality, xiRedirectUrl, redirectUrl, detectKey]);         //这段是SWFObject必须的基本参数，所有SWFObject都必须包含的。
+   so.addParam("Param1", "Param2");   //这里是给Flash添加内联参数，可以实现诸如背景透明之类的效果。依照需求添加就可以了，参数和emded/object标签是一样的代码，下同。
+   so.addParam("Param3", "Param4");
+   so.addParam("Param5", "Param6");
+   so.addVariable("variable1", "value1");    //这里是给Flash添加FlashVar，这是以FlashVar的方式给Flash的Root添加变量，对于Number型变量在Flash端需要 做类型转换。
+   so.addVariable("variable2", "value2");
+   so.addVariable("variable3", "value3");
+   so.addVariable("variable1", getQueryParamValue("variable1"));   //Flash获取URL变量对于url?arg1=test1&arg2=test2这样用GET方式传递变量的URL，我们可以用 getQueryParamValue方法来获取变量。
+   so.addVariable("variable2", getQueryParamValue("variable2"));
+   so.write("content");    //这里是至关重要的一个地方，他是用一段特定内容取代Flash无法显示时的内容。可以事先在CSS里定义好样式，在文档里使用div标签写出来。这里 在调用过来。
+   
+   
+   基本使用：
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" 
+"http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en">
+ <head>
+  <title>SWFObject dynamic embed - step 3</title>
+  <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1" />
+  <script type="text/javascript" src="swfobject.js"></script>
+  <script type="text/javascript">
+  swfobject.embedSWF("myContent.swf", "myContent", "300", "120", "9.0.0");
+  </script>
+ </head>
+ <body>
+  <div id="myContent">
+   <p>Alternative content</p>
+  </div>
+ </body>
+</html>
+
+参数定义：
+<script type="text/javascript">
+var flashvars = {
+ name1: "hello",
+ name2: "world",
+ name3: "foobar"
+};
+var params = {
+ menu: "false"
+};
+var attributes = {
+ id: "myDynamicContent",
+ name: "myDynamicContent"
+};
+swfobject.embedSWF("myContent.swf", "myContent", "300", "120", 
+  "9.0.0","expressInstall.swf", flashvars, params, attributes);
+</script>
+
+参数定义2：
+<script type="text/javascript">
+var flashvars = false;
+var params = {};
+var attributes = {
+ id: "myDynamicContent",
+ name: "myDynamicContent"
+};
+swfobject.embedSWF("myContent.swf", "myContent", "300", "120", 
+  "9.0.0","expressInstall.swf", flashvars, params, attributes);
+</script>
+
+希望本文所述对大家的javascript程序设计有所帮助。
